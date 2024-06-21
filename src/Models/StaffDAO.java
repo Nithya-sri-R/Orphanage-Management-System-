@@ -13,10 +13,11 @@ public class StaffDAO {
     private Connection connection;
     private static StaffDAO instance;
 
-    public StaffDAO(Connection connection) {
+    private StaffDAO(Connection connection) {
         this.connection = connection;
     }
-    public static StaffDAO getInstance(Connection connection) throws SQLException {
+
+    public static synchronized StaffDAO getInstance(Connection connection) throws SQLException {
         if (instance == null) {
             instance = new StaffDAO(connection);
         }
@@ -25,11 +26,19 @@ public class StaffDAO {
 
     public void addStaff(StaffDTO staff) throws SQLException {
         String sql = "INSERT INTO staff (staff_name, position, salary) VALUES (?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, staff.getStaffName());
             statement.setString(2, staff.getPosition());
             statement.setDouble(3, staff.getSalary());
             statement.executeUpdate();
+            
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    staff.setStaffId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Creating staff failed, no ID obtained.");
+                }
+            }
         }
     }
 

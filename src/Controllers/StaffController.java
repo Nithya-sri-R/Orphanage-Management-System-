@@ -23,9 +23,14 @@ public class StaffController {
     public StaffController(Connection connection) {
         this.connection = connection;
         this.healthMonitorDAO = new HealthMonitorDAO(connection);
-    //     this.orphanDAO = OrphanDAO.getInstance(connection);
-    //     this.staffDAO = StaffDAO.getInstance(connection);
-    //     this.donationDAO = DonationDAO.getInstance(connection);
+        try {
+            this.orphanDAO = OrphanDAO.getInstance(connection);
+            this.staffDAO = StaffDAO.getInstance(connection);
+            this.donationDAO = DonationDAO.getInstance(connection);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle initialization exception
+        }
     }
 
     public void addDonation(DonationDTO donation) throws SQLException {
@@ -65,5 +70,4 @@ public class StaffController {
     }
 
     // Additional methods for updating, deleting, and retrieving staff and donations
-
 }
